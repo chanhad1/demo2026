@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::.container}, ~{})}">
+<head>
+    <title>Trang chủ - Cửa hàng Phân phối</title>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-banner" style="background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%); color: white; padding: 60px 0; border-radius: 20px; margin-bottom: 40px; text-align: center; box-shadow: 0 10px 30px rgba(30,136,229,0.3);">
+            <h1 style="font-weight: 800; font-size: 3rem; margin-bottom: 20px;">Chào mừng bạn quay lại!</h1>
+            <p style="font-size: 1.25rem; opacity: 0.9;">Khám phá bộ sưu tập sản phẩm mới nhất với giá cực ưu đãi.</p>
+        </div>
+
+        <!-- Featured Products Title -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold"><i class="fas fa-star text-warning"></i> Sản phẩm nổi bật</h3>
+            <a href="/products" class="text-decoration-none fw-bold">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Grid Layout for Products (Simplified Showcase) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+            <div th:each="sp : ${listSanPham}">
+                <!--<a th:href="@{'/products'}" class="product-card-shop" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;"> -->
+					<a th:href="@{'/products/' + ${sp.id}}" class="product-card-shop" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.3s; border: 1px solid #eee;">
+                    <!-- Promo Badge -->
+                    <div th:if="${sp.khuyenMai != null}" class="promo-badge-home">
+                        <i class="fas fa-fire"></i> Giảm <span th:text="${#numbers.formatDecimal(sp.khuyenMai.discount, 0, 0)}"></span>%
+                    </div>
+                    
+                    <img th:src="${sp.imageUrl != null ? sp.imageUrl : '/images/default.jpg'}" 
+                         class="product-img-shop" 
+                         onerror="this.src='/images/default.jpg'"
+                         alt="Sản phẩm">
+                    
+                    <!-- Simplified Info without Cart tracking -->
+                    <div class="product-info-shop" style="padding: 18px; text-align: center; display: flex; flex-direction: column; justify-content: center; flex-grow: 1;">
+                        <h5 class="product-name" th:text="${sp.name}">Tên sản phẩm</h5>
+                        
+                        <div class="mb-0">
+                            <th:block th:if="${sp.khuyenMai != null}">
+                                <span class="price-old" th:text="${#numbers.formatDecimal(sp.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                <span class="price-new" th:text="${#numbers.formatDecimal(sp.getDiscountedPrice(), 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            </th:block>
+                            <th:block th:if="${sp.khuyenMai == null}">
+                                <span class="price-new" th:text="${#numbers.formatDecimal(sp.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            </th:block>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div th:if="${listSanPham == null or listSanPham.empty}" style="grid-column: 1 / -1; text-align: center; padding: 40px 0;">
+                <p class="text-muted">Đang cập nhật sản phẩm mới...</p>
+            </div>
+        </div>
+        
+        <!-- Banner Khuyến mãi -->
+        <div class="mt-5 p-5 bg-warning rounded-4 shadow-sm text-center" style="background: linear-gradient(to right, #fbc02d, #f57f17); color: white;">
+            <h2 class="fw-bold"><i class="fas fa-gift"></i> Chương trình tri ân khách hàng</h2>
+            <p class="mb-4">Nhận ngay mã giảm giá ưu đãi khi đăng ký thành viên và mua hàng thường xuyên.</p>
+            <a href="/promo" class="btn btn-outline-light btn-lg">Xem chi tiết khuyến mãi</a>
+        </div>
+    </div>
+</body>
+</html>

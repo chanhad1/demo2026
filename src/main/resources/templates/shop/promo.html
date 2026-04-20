@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::.container}, ~{})}">
+<head>
+    <title>Ưu đãi & Khuyến mãi - Cửa hàng</title>
+    <style>
+        .promo-card-customer {
+            border: none;
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .promo-card-customer:hover {
+            transform: translateY(-10px);
+        }
+        .promo-top {
+            background: linear-gradient(45deg, #ff4757, #ff6b81);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        .promo-top h2 { font-size: 3rem; font-weight: 800; margin: 0; }
+        .promo-top span { font-size: 1.1rem; font-weight: 600; opacity: 0.9; }
+        
+        .promo-content {
+            padding: 25px;
+            flex-grow: 1;
+            text-align: center;
+        }
+        
+        .promo-code {
+            border: 2px dashed #ff4757;
+            background: #fff5f5;
+            padding: 10px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #ff4757;
+            margin: 15px 0;
+            display: inline-block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bold"><i class="fas fa-gift text-danger"></i> Ưu đãi đặc biệt dành cho bạn</h1>
+            <p class="text-muted">Đừng bỏ lỡ cơ hội sở hữu sản phẩm yêu thích với mức giá không thể tốt hơn!</p>
+        </div>
+
+        <div th:if="${listPromo == null or listPromo.empty}" class="card-custom text-center py-5">
+            <i class="fas fa-search fa-4x text-light mb-3"></i>
+            <h3>Hiện chưa có chương trình khuyến mãi nào</h3>
+            <p class="text-muted">Hãy quay lại sau để không bỏ lỡ các ưu đãi hấp dẫn nhé!</p>
+        </div>
+
+        <div class="row g-4">
+            <div th:each="km : ${listPromo}" class="col-md-4">
+                <div class="promo-card-customer">
+                    <div class="promo-top">
+                        <span>GIẢM NGAY</span>
+                        <h2 th:text="${#numbers.formatDecimal(km.discount, 0, 0)} + '%'">10%</h2>
+                    </div>
+                    <div class="promo-content">
+                        <h4 class="fw-bold mb-3" th:text="${km.ten}">Tên chương trình</h4>
+                        <p class="text-muted mb-4 small">Áp dụng cho các sản phẩm nằm trong danh mục ưu đãi. Số lượng có hạn!</p>
+                        
+                        <div class="promo-code" onclick="alert('Đã sao chép mã!')">KM-<span th:text="${km.id}"></span>OFF</div>
+                        
+                        <div class="mt-4">
+                            <a href="/products" class="btn btn-outline-danger w-100">Dùng ngay</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to use -->
+        <div class="card-custom mt-5 bg-light border-0">
+            <h5 class="fw-bold mb-4">Làm thế nào để nhận ưu đãi?</h5>
+            <div class="row text-center g-4">
+                <div class="col-md-4">
+                    <i class="fas fa-search fa-2x text-primary mb-2"></i>
+                    <h6>1. Tìm ưu đãi</h6>
+                    <p class="small text-muted">Chọn chương trình khuyến mãi phù hợp với bạn trên trang này.</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-copy fa-2x text-primary mb-2"></i>
+                    <h6>2. Chọn sản phẩm</h6>
+                    <p class="small text-muted">Các sản phẩm có gắn thẻ "Giảm giá" sẽ tự động được áp dụng.</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-check-circle fa-2x text-primary mb-2"></i>
+                    <h6>3. Thanh toán</h6>
+                    <p class="small text-muted">Giá cuối cùng sau khi giảm sẽ hiển thị tại giỏ hàng.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

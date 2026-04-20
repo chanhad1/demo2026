@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::.container}, ~{::scripts})}">
+<head>
+    <title>Quản lý sản phẩm</title>
+    <style>
+        .product-img-table {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .product-img-table:hover {
+            transform: scale(1.5);
+            transition: transform 0.3s;
+            z-index: 10;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .preview-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Dashboard title area -->
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold"><i class="fas fa-boxes text-primary"></i> Quản lý kho sản phẩm</h2>
+                <p class="text-muted">Thêm mới, chỉnh sửa thông tin và áp dụng khuyến mãi cho sản phẩm.</p>
+            </div>
+            <a th:href="@{/home}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại Home
+            </a>
+        </div>
+
+        <div class="card-custom">
+            <!-- Form thêm/sửa sản phẩm -->
+            <form method="post" th:action="@{/products/save}" th:object="${sanpham}" enctype="multipart/form-data" class="mb-5 p-4 border rounded-4 bg-light shadow-sm">
+                <input type="hidden" th:field="*{id}">
+                
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Tên sản phẩm</label>
+                        <input type="text" th:field="*{name}" class="form-control" placeholder="Nhập tên sản phẩm..." required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Giá bán (đ)</label>
+                        <input type="number" th:field="*{price}" class="form-control" placeholder="0" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Chương trình Khuyến mãi</label>
+                        <select th:field="*{khuyenMai}" class="form-select">
+                            <option value="">-- Không áp dụng --</option>
+                            <option th:each="km : ${listPromo}" th:value="${km.id}" th:text="${km.ten} + ' (-' + ${km.discount} + '%)'"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Ảnh sản phẩm</label>
+                        <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" 
+                               th:required="${sanpham.id == null}">
+                    </div>
+                </div>
+                
+                <div class="row g-3 mt-1">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Danh mục</label>
+                        <input type="text" th:field="*{category}" class="form-control" placeholder="Điện thoại, Áo, ...">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Tồn kho</label>
+                        <input type="number" th:field="*{stock}" class="form-control" placeholder="0" min="0">
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label fw-bold">Mô tả chi tiết</label>
+                        <textarea th:field="*{description}" class="form-control" rows="2" placeholder="Thông số, tính năng..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-8">
+                        <div id="preview-container" th:if="${sanpham.imageUrl != null}">
+                            <small class="text-muted d-block mb-1">Ảnh hiện tại:</small>
+                            <img th:src="@{${sanpham.imageUrl}}" class="preview-image" id="target-preview">
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-save"></i> Lưu sản phẩm
+                        </button>
+                        <a th:href="@{/products}" class="btn btn-secondary px-4">
+                            <i class="fas fa-undo"></i> Làm mới
+                        </a>
+                    </div>
+                </div>
+            </form>
+            
+            <h4 class="fw-bold mb-3"><i class="fas fa-list"></i> Danh sách hiện có</h4>
+            <!-- Danh sách sản phẩm -->
+            <div class="table-responsive">
+                <table class="table-custom table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th class="text-center">Ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Kho</th>
+                        <th>Giá gốc</th>
+                        <th>Khuyến mãi</th>
+                        <th>Giá ưu đãi</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="sp : ${listSanPham}">
+                        <td th:text="${sp.id}" class="text-muted small"></td>
+                        <td class="text-center">
+                            <img th:src="${sp.imageUrl != null ? sp.imageUrl : '/images/default.jpg'}" 
+                                 class="product-img-table"
+                                 onerror="this.src='/images/default.jpg'">
+                        </td>
+                        <td><strong th:text="${sp.name}"></strong></td>
+                        <td th:text="${sp.category}"></td>
+                        <td th:text="${sp.stock}"></td>
+                        <td><span class="text-muted" th:text="${#numbers.formatDecimal(sp.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span></td>
+                        <td>
+                            <span th:if="${sp.khuyenMai != null}" class="badge bg-danger">
+                                <i class="fas fa-tag"></i> <span th:text="${sp.khuyenMai.ten}"></span>
+                            </span>
+                            <span th:if="${sp.khuyenMai == null}" class="text-muted small"><em>Không có</em></span>
+                        </td>
+                        <td>
+                            <span class="text-success fw-bold fs-5" th:text="${#numbers.formatDecimal(sp.getDiscountedPrice(), 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{'/products/edit/' + ${sp.id}}" class="btn btn-outline-warning btn-sm" title="Chỉnh sửa">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <a th:href="@{'/products/delete/' + ${sp.id}}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+            
+            <div th:if="${listSanPham == null or listSanPham.empty}" class="alert alert-info text-center py-4 border-0 rounded-4">
+                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                <p class="mb-0">Kho hàng đang trống. Hãy thêm sản phẩm đầu tiên của bạn!</p>
+            </div>
+        </div>
+    </div>
+    
+    <th:block th:fragment="scripts">
+        <script>
+            // Hiển thị xem trước ảnh ngay khi chọn file
+            document.getElementById('imageFile')?.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        let preview = document.getElementById('target-preview');
+                        if (!preview) {
+                            const container = document.getElementById('preview-container') || document.createElement('div');
+                            container.id = 'preview-container';
+                            container.innerHTML = '<small class="text-muted d-block mb-1">Ảnh xem trước:</small>';
+                            preview = document.createElement('img');
+                            preview.id = 'target-preview';
+                            preview.className = 'preview-image';
+                            container.appendChild(preview);
+                            if (!document.getElementById('preview-container')) {
+                                document.querySelector('.row.mt-3 .col-md-8').appendChild(container);
+                            }
+                        }
+                        preview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>

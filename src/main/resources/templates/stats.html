@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::.container}, ~{::scripts})}">
+<head>
+    <title>Thống kê - Hệ thống quản lý phân phối</title>
+</head>
+<body>
+    <div class="container">
+        <div class="card-custom">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-line text-primary"></i> Tổng quan thống kê</h2>
+                <div class="text-muted small">
+                    <i class="fas fa-calendar-alt"></i> Năm hiện tại: <span th:text="${T(java.time.LocalDateTime).now().getYear()}">2026</span>
+                </div>
+            </div>
+            
+            <div th:if="${not hasData}" class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-chart-bar fa-5x text-light"></i>
+                </div>
+                <h3>📊 Chưa có dữ liệu đơn hàng</h3>
+                <p class="text-muted">Hãy tạo đơn hàng đầu tiên để xem thống kê chi tiết!</p>
+                <a href="/products" class="btn btn-primary mt-3">
+                    <i class="fas fa-shopping-cart"></i> Đi đến cửa hàng
+                </a>
+            </div>
+
+            <div th:if="${hasData}">
+                <!-- Summary Cards -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-3">
+                        <div class="stat-card blue">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                            <h4 class="mt-2 small text-uppercase fw-bold opacity-75">Tổng doanh thu</h4>
+                            <h2 class="fw-bold fs-3" th:text="${#numbers.formatDecimal(revenue, 1, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card green">
+                            <i class="fas fa-shopping-bag fa-2x"></i>
+                            <h4 class="mt-2 small text-uppercase fw-bold opacity-75">Số đơn hàng</h4>
+                            <h2 class="fw-bold fs-3" th:text="${orders}">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card orange">
+                            <i class="fas fa-calculate fa-2x"></i>
+                            <h4 class="mt-2 small text-uppercase fw-bold opacity-75">Giá trị TB đơn</h4>
+                            <h2 class="fw-bold fs-3" th:text="${#numbers.formatDecimal(avgOrderValue, 1, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card cyan">
+                            <i class="fas fa-award fa-2x"></i>
+                            <h4 class="mt-2 small text-uppercase fw-bold opacity-75">Tháng cao điểm</h4>
+                            <h2 class="fw-bold fs-3" th:text="${bestMonth}">Tháng 1</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="mt-4">
+                    <h4 class="mb-4 text-center fw-bold"><i class="fas fa-chart-area text-primary"></i> Xu hướng doanh thu theo tháng</h4>
+                    <div class="chart-container-inner" style="background: #f8f9fa; border-radius: 15px; padding: 20px; border: 1px solid #eee; min-height: 400px;">
+                        <canvas id="revenueChart" style="max-height: 400px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart.js and Initialization -->
+    <th:block th:fragment="scripts">
+        <th:block th:if="${hasData}">
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                const monthlyRevenue = /*[[${monthlyRevenue}]]*/ [];
+                
+                document.addEventListener("DOMContentLoaded", function() {
+                    const ctx = document.getElementById('revenueChart').getContext('2d');
+                    
+                    // Create gradient for bars
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(30, 136, 229, 0.9)');
+                    gradient.addColorStop(1, 'rgba(30, 136, 229, 0.4)');
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+                            datasets: [{
+                                label: 'Doanh thu (VNĐ)',
+                                data: monthlyRevenue,
+                                backgroundColor: gradient,
+                                borderColor: '#1565c0',
+                                borderWidth: 1,
+                                borderRadius: 8,
+                                hoverBackgroundColor: '#1565c0',
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    titleColor: '#333',
+                                    bodyColor: '#333',
+                                    borderColor: '#dee2e6',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                    displayColors: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) label += ': ';
+                                            if (context.parsed.y !== null) {
+                                                label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' đ';
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                                    ticks: {
+                                        font: { family: "'Inter', sans-serif" },
+                                        callback: function(value) {
+                                            return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
+                                        }
+                                    }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { font: { family: "'Inter', sans-serif", weight: '600' } }
+                                }
+                            }
+                        }
+                    });
+                });
+                /*]]>*/
+            </script>
+        </th:block>
+    </th:block>
+</body>
+</html>

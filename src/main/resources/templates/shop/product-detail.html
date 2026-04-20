@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::.container}, ~{::scripts})}">
+<head>
+    <title th:text="${product.name} + ' - Chi tiết sản phẩm'">Chi tiết sản phẩm</title>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/home" class="text-decoration-none">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/products" class="text-decoration-none">Sản phẩm</a></li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${product.name}"></li>
+            </ol>
+        </nav>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+            <div class="row g-0">
+                <!-- Product Image -->
+                <div class="col-md-5 bg-white d-flex align-items-center justify-content-center p-4 border-end">
+                    <img th:src="${product.imageUrl != null ? product.imageUrl : '/images/default.jpg'}" 
+                         class="img-fluid rounded-3" 
+                         onerror="this.src='/images/default.jpg'"
+                         alt="Hình ảnh sản phẩm" style="max-height: 500px; object-fit: contain;">
+                </div>
+                
+                <!-- Product Details -->
+                <div class="col-md-7 p-5 bg-light">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <span class="badge bg-primary mb-2 px-3 py-2 rounded-pill shadow-sm" th:text="${product.category != null and product.category != '' ? product.category : 'Sản phẩm'}"></span>
+                            <h2 class="fw-bold mb-1" th:text="${product.name}">Tên sản phẩm</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 text-warning fs-5">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i th:class="${product.rating >= 5.0 ? 'fas fa-star' : 'fas fa-star-half-alt'}"></i>
+                        <span class="text-muted ms-2 fs-6" th:text="'(' + ${product.rating} + ' đánh giá)'"></span>
+                    </div>
+
+                    <div class="mb-4 bg-white p-3 rounded-3 shadow-sm d-inline-block border">
+                        <th:block th:if="${product.khuyenMai != null}">
+                            <span class="text-muted text-decoration-line-through fs-5 me-3" th:text="${#numbers.formatDecimal(product.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            <span class="text-danger fw-bold fs-2" th:text="${#numbers.formatDecimal(product.getDiscountedPrice(), 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            <span class="badge bg-danger ms-3 align-middle fs-6">Giảm <span th:text="${product.khuyenMai.discount}"></span>%</span>
+                        </th:block>
+                        <th:block th:if="${product.khuyenMai == null}">
+                            <span class="text-primary fw-bold fs-2" th:text="${#numbers.formatDecimal(product.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        </th:block>
+                    </div>
+
+                    <h5 class="fw-bold mt-2"><i class="fas fa-info-circle text-info"></i> Mô tả sản phẩm</h5>
+                    <p class="text-muted mb-4" th:text="${product.description != null and product.description != '' ? product.description : 'Sản phẩm này chưa có mô tả chi tiết.'}" style="line-height: 1.8; white-space: pre-line;"></p>
+                    
+                    <hr class="my-4 text-muted">
+                    
+                    <!-- Stock status -->
+                    <div class="mb-4 mt-3">
+                        <span class="fw-bold fs-6"><i class="fas fa-box-open text-secondary"></i> Tình trạng: </span>
+                        <span th:if="${product.stock > 0}" class="text-success fw-bold fs-6 ms-2">Còn <span th:text="${product.stock}"></span> sản phẩm</span>
+                        <span th:if="${product.stock <= 0}" class="text-danger fw-bold fs-6 ms-2"><i class="fas fa-times-circle"></i> Tạm hết hàng</span>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex align-items-center gap-3 mt-4">
+                        <div class="qty-wrapper border border-2 rounded-pill px-3 py-2 d-flex align-items-center bg-white shadow-sm" style="width: fit-content;">
+                            <button class="btn btn-sm btn-link text-dark text-decoration-none fw-bold" onclick="updateDetailQty(-1)"><i class="fas fa-minus"></i></button>
+                            <input type="number" id="detail-qty" value="1" min="1" th:max="${product.stock > 0 ? product.stock : 1}" class="form-control border-0 text-center fw-bold bg-transparent mx-2 fs-5" style="width: 60px;" readonly>
+                            <button class="btn btn-sm btn-link text-dark text-decoration-none fw-bold" onclick="updateDetailQty(1)"><i class="fas fa-plus"></i></button>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-lg rounded-pill px-5 shadow fw-bold" th:onclick="'addToCart(' + ${product.id} + ')'" th:disabled="${product.stock <= 0}">
+                            <i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div th:if="${relatedProducts != null and !relatedProducts.empty}" class="mt-5 mb-5">
+            <h4 class="fw-bold mb-4 border-start border-primary border-4 ps-3">Sản phẩm liên quan</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+                <div th:each="sp : ${relatedProducts}" class="shadow-sm rounded-4 overflow-hidden bg-white border h-100 transition-hover">
+                    <a th:href="@{'/products/' + ${sp.id}}" class="text-decoration-none d-flex flex-column h-100">
+                        <div class="position-relative overflow-hidden group">
+                            <!-- Promo Badge -->
+                            <div th:if="${sp.khuyenMai != null}" class="position-absolute top-0 start-0 m-2 badge bg-danger fs-6 shadow-sm z-index-1">
+                                -<span th:text="${#numbers.formatDecimal(sp.khuyenMai.discount, 0, 0)}"></span>%
+                            </div>
+                            <!-- Image -->
+                            <div class="bg-light p-3 text-center" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <img th:src="${sp.imageUrl != null ? sp.imageUrl : '/images/default.jpg'}" 
+                                     class="img-fluid" style="max-height: 100%; object-fit: contain;" onerror="this.src='/images/default.jpg'" alt="Sản phẩm">
+                            </div>
+                        </div>
+                        
+                        <div class="p-3 text-center d-flex flex-column flex-grow-1 justify-content-between">
+                            <h6 class="text-dark fw-bold mb-2 text-truncate px-2" th:title="${sp.name}" th:text="${sp.name}">Tên sản phẩm</h6>
+                            <div class="mb-0 mt-auto">
+                                <th:block th:if="${sp.khuyenMai != null}">
+                                    <span class="text-danger fw-bold fs-5" th:text="${#numbers.formatDecimal(sp.getDiscountedPrice(), 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                </th:block>
+                                <th:block th:if="${sp.khuyenMai == null}">
+                                    <span class="text-primary fw-bold fs-5" th:text="${#numbers.formatDecimal(sp.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                </th:block>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block th:fragment="scripts">
+        <style>
+            .transition-hover {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .transition-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            }
+        </style>
+        <script>
+            function updateDetailQty(delta) {
+                const input = document.getElementById('detail-qty');
+                let max = parseInt(input.getAttribute('max')) || 1;
+                let val = parseInt(input.value) || 1;
+                val += delta;
+                if (val < 1) val = 1;
+                if (val > max) {
+                    val = max;
+                    alert('Chỉ còn ' + max + ' sản phẩm trong kho!');
+                }
+                input.value = val;
+            }
+
+            function addToCart(id) {
+                const qty = document.getElementById('detail-qty').value;
+                window.location.href = `/cart/add/${id}?qty=${qty}`;
+            }
+        </script>
+    </th:block>
+</body>
+</html>

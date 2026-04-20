@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::.container}, ~{})}">
+<head>
+    <title>Đơn hàng của tôi</title>
+    <style>
+        .order-id { color: var(--primary-blue); font-weight: 700; font-family: monospace; }
+        .status-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card-custom">
+            <h2 class="mb-4"><i class="fas fa-history"></i> Lịch sử mua hàng</h2>
+
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <hr>
+            
+            <div th:if="${listOrders == null or listOrders.empty}" class="text-center py-5">
+                <i class="fas fa-box-open fa-4x text-light mb-3"></i>
+                <h4>Bạn chưa có đơn hàng nào</h4>
+                <p class="text-muted">Đừng để giỏ hàng trống, hãy mua sắm ngay!</p>
+                <a href="/products" class="btn btn-primary mt-2">Đi tới cửa hàng</a>
+            </div>
+
+            <div th:if="${listOrders != null and !listOrders.empty}">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Tổng thanh toán</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="o : ${listOrders}">
+                            <td><span class="order-id" th:text="'#' + ${o.id}"></span></td>
+                            <td><strong th:text="${o.productName}"></strong></td>
+                            <td class="text-center" th:text="${o.quantity}"></td>
+                            <td>
+                                <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(o.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            </td>
+                            <td><span class="status-badge"><i class="fas fa-check"></i> Hoàn thành</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mt-4 p-4 border rounded-4 bg-light">
+            <h5 class="fw-bold mb-3"><i class="fas fa-info-circle text-primary"></i> Chính sách hỗ trợ</h5>
+            <ul class="mb-0 text-muted small">
+                <li>Đơn hàng sẽ được xử lý và giao trong vòng 2-3 ngày làm việc.</li>
+                <li>Bạn có thể đổi trả sản phẩm trong vòng 7 ngày nếu có lỗi từ nhà sản xuất.</li>
+                <li>Mọi thắc mắc vui lòng liên hệ hotline: 1900 6789.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

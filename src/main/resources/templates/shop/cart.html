@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::.container}, ~{})}">
+<head>
+    <title>Giỏ hàng của tôi</title>
+    <style>
+        .cart-header { background: #f8f9fa; padding: 15px; border-radius: 10px; font-weight: 700; color: #555; }
+        .cart-item-row { border-bottom: 1px solid #eee; padding: 20px 0; align-items: center; }
+        .cart-item-row:last-child { border-bottom: none; }
+        .checkout-summary {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+            position: sticky;
+            top: 150px;
+        }
+        .total-amount { font-size: 1.8rem; font-weight: 800; color: #d32f2f; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mb-4"><i class="fas fa-shopping-basket text-primary"></i> Giỏ hàng của bạn</h2>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div th:if="${cart == null or cart.empty}" class="card-custom text-center py-5">
+            <i class="fas fa-shopping-cart fa-5x text-light mb-4"></i>
+            <h3>Giỏ hàng đang trống!</h3>
+            <p class="text-muted">Có vẻ như bạn chưa chọn sản phẩm nào. Hãy khám phá ngay!</p>
+            <a href="/products" class="btn btn-primary btn-lg mt-3">Tiếp tục mua sắm</a>
+        </div>
+
+        <div th:if="${cart != null and !cart.empty}" class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="card-custom">
+                    <div class="cart-header d-none d-md-flex row">
+                        <div class="col-md-6">Sản phẩm</div>
+                        <div class="col-md-2 text-center">Đơn giá</div>
+                        <div class="col-md-2 text-center">S.Lượng</div>
+                        <div class="col-md-2 text-end">Thành tiền</div>
+                    </div>
+                    
+                    <div th:each="item : ${cart}" class="cart-item-row row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="fw-bold fs-5" th:text="${item.name}">Tên sản phẩm</div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <span class="text-muted" th:text="${#numbers.formatDecimal(item.price, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <span class="badge bg-light text-dark px-3 py-2 border" th:text="${item.quantity}">1</span>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <span class="fw-bold text-primary" th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            <form th:action="@{/cart/remove}" method="post" class="mt-2">
+                                <input type="hidden" name="name" th:value="${item.name}">
+                                <button type="submit" class="btn btn-link btn-sm text-danger p-0" title="Xóa khỏi giỏ">
+                                    <i class="fas fa-trash-alt"></i> Xóa
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="/products" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Thêm sản phẩm khác
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="col-lg-4">
+                <div class="checkout-summary">
+                    <h4 class="fw-bold mb-4">Tổng kết đơn hàng</h4>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính:</span>
+                        <span th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span>Phí vận chuyển:</span>
+                        <span class="text-success fw-bold">Miễn phí</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-5 align-items-center">
+                        <span class="fw-bold">Tổng thanh toán:</span>
+                        <span class="total-amount" th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                    </div>
+                    
+                    <form th:action="@{/orders/checkout}" method="post">
+                        <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold">
+                            <i class="fas fa-credit-card"></i> XÁC NHẬN ĐẶT HÀNG
+                        </button>
+                    </form>
+                    
+                    <div class="mt-4 text-center small text-muted">
+                        <i class="fas fa-shield-alt"></i> Thanh toán an toàn & Bảo mật thông tin
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
