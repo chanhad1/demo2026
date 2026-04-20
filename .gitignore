@@ -1,10 +1,12 @@
-HELP.md
+# Compiled files
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+*.class
 
-### STS ###
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# IDE - Eclipse
 .apt_generated
 .classpath
 .factorypath
@@ -13,21 +15,44 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
+# IDE - IntelliJ IDEA
 .idea
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# IDE - NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# IDE - VS Code
+.vscode
+
+# Logs
+*.log
+
+# Maven release
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Application config (chứa mật khẩu - KHÔNG UPLOAD)
+application.properties
+
+# Uploaded images
+src/main/resources/static/uploads/
+
+# System files
+Thumbs.db
+.DS_Store
+
+# HELP.md
+HELP.md
